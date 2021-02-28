@@ -16,46 +16,33 @@ namespace barcodegen.Controllers
     public class BarcodeGenController : ControllerBase
     {
         private readonly ILogger<BarcodeGenController> _logger;
+        private const int DEFAULT_WIDTH = 300;
+        private const int DEFAULT_HEIGHT = 300;
 
         public BarcodeGenController(ILogger<BarcodeGenController> logger) => _logger = logger;
 
         [HttpGet]
         
-        public IActionResult Get(String barcodetype, String text)
+
+        public IActionResult Get(String barcodetype, String text, 
+                                    [FromQuery]  EncodingOptions ProvidedOptions)
         {
-            //string todo;
-            //todo = type + text;
-            //return Ok(todo);
-            const int DEFAULT_WIDTH = 300;
-            const int DEFAULT_HEIGHT = 100;
-
-            BarcodeFormat barcodeFormat;
-            
-
-            int height;
-            int width;
-
-            barcodeFormat = (BarcodeFormat)Enum.Parse(typeof(BarcodeFormat), barcodetype);
-            
-            if (barcodeFormat == BarcodeFormat.QR_CODE) 
+            if (ProvidedOptions.Width == 0) 
             {
-                height = DEFAULT_WIDTH;
-                width = DEFAULT_WIDTH;
-            } else
-            {
-                height = DEFAULT_HEIGHT;
-                width = DEFAULT_WIDTH;                
+                ProvidedOptions.Width = DEFAULT_WIDTH;
             }
 
+            if (ProvidedOptions.Height == 0) 
+            {
+                ProvidedOptions.Height = DEFAULT_HEIGHT;
+            }
+
+            var barcodeFormat = (BarcodeFormat)Enum.Parse(typeof(BarcodeFormat), barcodetype);
+            
             var barcodeWriter = new ZXing.ImageSharp.BarcodeWriter<Rgba32>
             {
                 Format = barcodeFormat,
-                Options = new EncodingOptions
-                {
-                    Height = height,
-                    Width = width,
-                    PureBarcode = false
-                }
+                Options = ProvidedOptions
             };
 
             Image<Rgba32> bitmap;
@@ -74,7 +61,7 @@ namespace barcodegen.Controllers
             bitmap.SaveAsPng(stream);
             stream.Position = 0;
             return File(stream, "image/png");
-            //return Ok(String.Format("{0}", stream.Length));
+
 
         }
     }
