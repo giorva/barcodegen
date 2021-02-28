@@ -17,7 +17,7 @@ namespace barcodegen.Controllers
     {
         private readonly ILogger<BarcodeGenController> _logger;
         private const int DEFAULT_WIDTH = 300;
-        private const int DEFAULT_HEIGHT = 300;
+        private const int DEFAULT_HEIGHT = 100;
 
         public BarcodeGenController(ILogger<BarcodeGenController> logger) => _logger = logger;
 
@@ -27,6 +27,8 @@ namespace barcodegen.Controllers
         public IActionResult Get(String barcodetype, String text, 
                                     [FromQuery]  EncodingOptions ProvidedOptions)
         {
+            var barcodeFormat = (BarcodeFormat)Enum.Parse(typeof(BarcodeFormat), barcodetype);
+            
             if (ProvidedOptions.Width == 0) 
             {
                 ProvidedOptions.Width = DEFAULT_WIDTH;
@@ -34,11 +36,17 @@ namespace barcodegen.Controllers
 
             if (ProvidedOptions.Height == 0) 
             {
-                ProvidedOptions.Height = DEFAULT_HEIGHT;
+                if (BarcodeFormat.All_1D.HasFlag(barcodeFormat))
+                {
+                    ProvidedOptions.Height = DEFAULT_HEIGHT;
+                }
+                else
+                {
+                    ProvidedOptions.Height = DEFAULT_WIDTH;
+                }
+                
             }
-
-            var barcodeFormat = (BarcodeFormat)Enum.Parse(typeof(BarcodeFormat), barcodetype);
-            
+                    
             var barcodeWriter = new ZXing.ImageSharp.BarcodeWriter<Rgba32>
             {
                 Format = barcodeFormat,
