@@ -27,7 +27,17 @@ namespace barcodegen.Controllers
         public IActionResult Get(String barcodetype, String text, 
                                     [FromQuery]  EncodingOptions ProvidedOptions)
         {
-            var barcodeFormat = (BarcodeFormat)Enum.Parse(typeof(BarcodeFormat), barcodetype);
+            BarcodeFormat barcodeFormat = 0;
+
+            try
+            {
+                barcodeFormat  = (BarcodeFormat)Enum.Parse(typeof(BarcodeFormat), barcodetype);
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            
             
             if (ProvidedOptions.Width == 0) 
             {
